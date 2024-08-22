@@ -1,25 +1,40 @@
 const express = require('express');
 const router = express.Router();
+const prisma = require('../prisma/client')
+const asyncHandler = require('express-async-handler');
 
-router.get('/', (req, res) => { // Get all comments
-    // Should add function to sort comments by date (most recent)
-    res.send('GET all comments')
-})
+router.get('/', asyncHandler(async (req, res) => { // Get all comments
+    const comments = await prisma.comment.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
 
-router.get('/:commentId', (req, res) => {
-    res.send(`GET comment of ID ${req.params.commentId}`)
-})
+    res.json(comments)
+}))
 
-router.post('/', (req, res) => {
-    res.send(`Message: ${req.body.text}`)
-})
+router.get('/:commentId', asyncHandler(async(req, res) => {
+    const comment = await prisma.comment.findUnique({where: {id: Number(req.params.commentId)}})
 
-router.put('/:commentId', (req, res) => {
-    res.send(`PUT comment of id ${req.params.commentId}`)
-})
+    res.json(comment)
+}))
 
-router.delete('/:commentId', (req, res) => {
-    res.send(`DELETE comment of id ${req.params.commentId}`)
-})
+router.put('/:commentId', asyncHandler(async(req, res) => {
+    const comment = await prisma.comment.update({
+        where: {id: Number(req.params.commentId)},
+        data: {
+            content: req.body.content,
+            updatedAt: new Date()
+        }
+    })
+    
+    res.json(comment)
+}))
+
+router.delete('/:commentId', asyncHandler(async(req, res) => {
+    const comment = await prisma.comment.delete({where: {id: Number(req.params.commentId)}})
+    
+    res.json(comment)
+}))
 
 module.exports = router;

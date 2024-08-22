@@ -8,11 +8,10 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   name     String
   password String
   posts    Post[]
-  comments Comment[]
 }
 
 model Post {
@@ -22,6 +21,7 @@ model Post {
   author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
   content   String
   comments  Comment[]
   published Boolean   @default(true)
@@ -30,9 +30,9 @@ model Post {
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  author    String   @default("Anonymous")
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
