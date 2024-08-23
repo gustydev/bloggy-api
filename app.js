@@ -1,17 +1,34 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+const passport = require('passport');
+const JwtStrategy = require('passport-jwt').Strategy,
+      ExtractJwt = require('passport-jwt').ExtractJwt;
+const prisma = require('./prisma/client');
 const postRouter = require('./routes/post')
 const commentRouter = require('./routes/comment')
 const userRouter = require('./routes/user');
 
-app.get('/', function (req, res) {
-    res.send('Hi there from the index')
-})
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const opts = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.SECRET,
+};
+
+passport.use(
+    new JwtStrategy(opts, async (payload, done) => {
+      try {
+        const user = await prisma.user.findUnique({where: {id: payload.id}})
+        if (user) {
+            return done(null, true)
+        }
+      } catch (error) {
+        return done(error);
+      }
+    })
+);
 
 app.use('/post', postRouter)
 app.use('/comment', commentRouter)

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../prisma/client');
 const asyncHandler = require('express-async-handler')
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
 
 router.get('/', asyncHandler(async (req, res) => {
     // Get all posts
@@ -24,12 +26,15 @@ router.get('/:postId/comment', asyncHandler(async (req, res) => {
     res.json(comments);
 }));
 
-router.post('/', asyncHandler(async (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res) => {
     // Create post with data sent by client
+    const token = req.headers['authorization'].split(' ')[1]
+    const decoded = jwt.verify(token, process.env.SECRET)
+    
     const post = await prisma.post.create({
         data: {
             title: req.body.title,
-            authorId: 1, // Id of logged user
+            authorId: decoded.id,
             content: req.body.content
         },
         include: {
