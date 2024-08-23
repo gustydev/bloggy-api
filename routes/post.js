@@ -9,28 +9,34 @@ router.get('/', asyncHandler(async (req, res) => {
     // Get all posts
     const posts = await prisma.post.findMany();
 
-    res.json(posts)
+    res.status(200).json(posts)
 }))
 
 router.get('/:postId', asyncHandler(async (req, res) => {
     // Get specific post by id
     const post = await prisma.post.findUnique({where: {id: Number(req.params.postId)}, include: {comments: true}})
 
-    res.json(post)
+    res.status(200).json(post)
 }))
 
 router.get('/:postId/comment', asyncHandler(async (req, res) => {
     // Get comments of specific post by its id
     const comments = await prisma.comment.findMany({where: {postId: Number(req.params.postId)}});
 
-    res.json(comments);
+    res.status(200).json(comments);
 }));
 
-router.post('/', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res) => {
-    // Create post with data sent by client
+router.post('/', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
     const token = req.headers['authorization'].split(' ')[1]
-    const decoded = jwt.verify(token, process.env.SECRET)
-    
+    const decoded = jwt.verify(token, process.env.SECRET) // Contains ID and expiration date
+
+    if (!req.body.content || !req.body.title) {
+        const err = new Error('Post is missing title and/or text content');
+        err.statusCode = 400;
+        return next(err);
+    }
+
+    // Create post with data sent by client
     const post = await prisma.post.create({
         data: {
             title: req.body.title,
@@ -42,23 +48,43 @@ router.post('/', passport.authenticate('jwt', { session: false }), asyncHandler(
         }
     })
 
-    res.json(post)
+    res.status(200).json(post)
 }))
 
-router.post('/:postId/comment', asyncHandler(async (req, res) => {
+router.post('/:postId/comment', asyncHandler(async (req, res, next) => {
+    if (!req.body.content.length) {
+        const error = new Error('Comment must not be empty')
+        error.statusCode = 400;
+        return next(error);
+    }
+
+    const post = await prisma.post.findUnique({where: {id: Number(req.params.postId)}})
+    if (!post) {
+        const error = new Error(`Post of id ${req.params.postId} not found`)
+        error.statusCode = 404;
+        return next(error)
+    }
+
     // Create comment under post
     const comment = await prisma.comment.create({
         data: {
             content: req.body.content,
-            author: req.body.author,
+            author: req.body.author, // Defaults to 'Anonymous' if no value is provided
             postId: Number(req.params.postId)
         }
     })
 
-    res.json(comment);
+    res.status(200).json(comment);
 }));
 
-router.put('/:postId', asyncHandler(async(req, res) => {
+router.put('/:postId', passport.authenticate('jwt', { session: false }), asyncHandler(async(req, res, next) => {
+    const exists = await prisma.post.findUnique({where: {id: Number(req.params.postId)}})
+    if (!exists) {
+        const error = new Error(`Post of id ${req.params.postId} not found`)
+        error.statusCode = 404;
+        return next(error)
+    }
+
     const post = await prisma.post.update({
         where: {id: Number(req.params.postId)},
         data: {
@@ -69,14 +95,21 @@ router.put('/:postId', asyncHandler(async(req, res) => {
         }
     });
 
-    res.json(post);
+    res.status(200).json(post);
 }))
 
-router.delete('/:postId', asyncHandler(async (req, res) => {
+router.delete('/:postId', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
+    const exists = await prisma.post.findUnique({where: {id: Number(req.params.postId)}})
+    if (!exists) {
+        const error = new Error(`Post of id ${req.params.postId} not found`)
+        error.statusCode = 404;
+        return next(error)
+    }
+
     await prisma.comment.deleteMany({where: {postId: Number(req.params.postId)}});
     const post = await prisma.post.delete({where: {id: Number(req.params.postId)}})
 
-    res.json(post)
+    res.status(200).json(post)
 }))
 
 module.exports = router;

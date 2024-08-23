@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const passport = require('passport');
+const createError = require('http-errors');
 const JwtStrategy = require('passport-jwt').Strategy,
       ExtractJwt = require('passport-jwt').ExtractJwt;
-const prisma = require('./prisma/client');
+const { Prisma } = require('@prisma/client');
+const prismaClient = require('./prisma/client');
 const postRouter = require('./routes/post')
 const commentRouter = require('./routes/comment')
 const userRouter = require('./routes/user');
@@ -20,7 +22,7 @@ const opts = {
 passport.use(
     new JwtStrategy(opts, async (payload, done) => {
       try {
-        const user = await prisma.user.findUnique({where: {id: payload.id}})
+        const user = await prismaClient.user.findUnique({where: {id: payload.id}})
         if (user) {
             return done(null, true)
         }
@@ -30,19 +32,25 @@ passport.use(
     })
 );
 
-app.use('/post', postRouter)
-app.use('/comment', commentRouter)
-app.use('/user', userRouter)
+app.use('/api/post', postRouter)
+app.use('/api/comment', commentRouter)
+app.use('/api/user', userRouter)
 
-// // catch 404 and forward to error handler
-// app.use(function(req, res, next) {
-//     next(createError(404));
-//   });
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
   
-// app.use(function(err, req, res, next) {
-//     res.locals.message = err.message;
-//     res.locals.error = req.app.get('env') === 'development' ? err : {};
-//     res.status(err.status || 500);
-// });
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(statusCode).json({
+      error: {
+          message,
+          statusCode
+      }
+  });
+});
 
 app.listen(process.env.PORT, () => {console.log(`App listening on port ${process.env.PORT}`)})
