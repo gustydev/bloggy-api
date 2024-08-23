@@ -32,8 +32,8 @@ passport.use(
     })
 );
 
-app.use('/api/post', postRouter)
-app.use('/api/comment', commentRouter)
+app.use('/api/posts', postRouter)
+app.use('/api/comments', commentRouter)
 app.use('/api/user', userRouter)
 
 // catch 404 and forward to error handler
@@ -53,4 +53,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(process.env.PORT, () => {console.log(`App listening on port ${process.env.PORT}`)})
+app.listen(process.env.PORT || 3000, () => {console.log(`App listening on port ${process.env.PORT}`)})
