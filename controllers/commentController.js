@@ -14,7 +14,8 @@ exports.getAllComments = asyncHandler(async (req, res) => {
         },
         where: {
             content: { contains: filter }
-        }
+        },
+        include: { post: { select: {title: true } } }
     });
 
     res.status(200).json(comments);
@@ -23,6 +24,7 @@ exports.getAllComments = asyncHandler(async (req, res) => {
 exports.getCommentById = asyncHandler(async (req, res) => {
     const comment = await prisma.comment.findUnique({
         where: { id: Number(req.params.commentId) },
+        include: { post: { select: {title: true } } }
     });
     res.status(200).json(comment);
 });

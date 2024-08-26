@@ -15,7 +15,8 @@ exports.getPosts = asyncHandler(async (req, res) => {
         },
         where: {
             content: { contains: filter }
-        }
+        },
+        include: { author: { select: { name: true } } }
     });
 
     res.status(200).json(posts);
@@ -24,7 +25,10 @@ exports.getPosts = asyncHandler(async (req, res) => {
 exports.getPostById = asyncHandler(async (req, res) => {
     const post = await prisma.post.findUnique({
         where: { id: Number(req.params.postId) },
-        include: { comments: true },
+        include: { 
+            comments: true,
+            author: { select: { name: true } }
+        },
     });
     res.status(200).json(post);
 });
@@ -41,7 +45,7 @@ exports.getCommentsByPostId = asyncHandler(async (req, res) => {
         where: { 
             postId: Number(req.params.postId),
             content: { contains: filter }
-         },
+        },
     });
 
     res.status(200).json(comments);
