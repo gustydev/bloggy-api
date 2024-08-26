@@ -4,8 +4,20 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { body, param, validationResult } = require("express-validator");
 
-exports.getAllPosts = asyncHandler(async (req, res) => {
-    const posts = await prisma.post.findMany();
+exports.getPosts = asyncHandler(async (req, res) => {
+    const { page, limit, filter, sort = 'desc' } = req.query;
+
+    const posts = await prisma.post.findMany({
+        skip: (page - 1) * limit || undefined,
+        take: Number(limit) || undefined,
+        orderBy: {
+            updatedAt: sort
+        },
+        where: {
+            content: { contains: filter }
+        }
+    });
+
     res.status(200).json(posts);
 });
 
@@ -18,9 +30,20 @@ exports.getPostById = asyncHandler(async (req, res) => {
 });
 
 exports.getCommentsByPostId = asyncHandler(async (req, res) => {
+    const { page, limit, filter, sort = 'desc' } = req.query;
+
     const comments = await prisma.comment.findMany({
-        where: { postId: Number(req.params.postId) },
+        skip: (page - 1) * limit || undefined,
+        take: Number(limit) || undefined,
+        orderBy: {
+            updatedAt: sort
+        },
+        where: { 
+            postId: Number(req.params.postId),
+            content: { contains: filter }
+         },
     });
+    
     res.status(200).json(comments);
 });
 

@@ -4,11 +4,19 @@ const passport = require('passport');
 const { body, param, validationResult } = require('express-validator');
 
 exports.getAllComments = asyncHandler(async (req, res) => {
+    const { page, limit, filter, sort = 'desc' } = req.query;
+
     const comments = await prisma.comment.findMany({
+        skip: (page - 1) * limit || undefined,
+        take: Number(limit) || undefined,
         orderBy: {
-            createdAt: 'desc',
+            updatedAt: sort
         },
+        where: {
+            content: { contains: filter }
+        }
     });
+    
     res.status(200).json(comments);
 });
 
