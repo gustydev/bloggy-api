@@ -4,7 +4,7 @@ const passport = require('passport');
 const { body, param, validationResult } = require('express-validator');
 
 exports.getAllComments = asyncHandler(async (req, res) => {
-    const { page, limit, filter, sort = 'desc' } = req.query;
+    const { page, limit, filter, sort = 'asc' } = req.query;
 
     const comments = await prisma.comment.findMany({
         skip: (page - 1) * limit || undefined,
@@ -16,7 +16,7 @@ exports.getAllComments = asyncHandler(async (req, res) => {
             content: { contains: filter }
         }
     });
-    
+
     res.status(200).json(comments);
 });
 

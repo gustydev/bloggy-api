@@ -30,7 +30,7 @@ exports.getPostById = asyncHandler(async (req, res) => {
 });
 
 exports.getCommentsByPostId = asyncHandler(async (req, res) => {
-    const { page, limit, filter, sort = 'desc' } = req.query;
+    const { page, limit, filter, sort = 'asc' } = req.query;
 
     const comments = await prisma.comment.findMany({
         skip: (page - 1) * limit || undefined,
@@ -43,7 +43,7 @@ exports.getCommentsByPostId = asyncHandler(async (req, res) => {
             content: { contains: filter }
          },
     });
-    
+
     res.status(200).json(comments);
 });
 
