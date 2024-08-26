@@ -1,3 +1,4 @@
+require('dotenv').config();
 const prisma = require('../prisma/client');
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcryptjs');
@@ -21,6 +22,7 @@ exports.userRegisterPost = [
             throw new Error(`Username '${value}' already in use. Please try a different one.`)
         }
     }),
+    body('secret').equals(process.env.REGISTER_SECRET).withMessage('Secret register password is invalid'),
 
     asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
@@ -71,8 +73,8 @@ exports.userLoginPost = [
         if (errors.isEmpty()) {
             const user = await prisma.user.findFirst({where: {name: req.body.name}})
             const token = jwt.sign({id: user.id}, process.env.SECRET, { expiresIn: '3d' })
-            // Generates token for any registered user, meaning any user can create posts with a token
-            // Later change so only admins (assigned users) have tokens
+            // Generates token for logged in users
+            // To register in the first place you need a secret key, so this is (i think) not a problem
         
             return res.status(200).json({message: 'Logged in successfully! Token expires in 3 days', token})
         } else {
