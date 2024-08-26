@@ -4,7 +4,9 @@
   "description": "RESTful API for blogs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --watch app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "createdb": "npx prisma generate && npx prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",
