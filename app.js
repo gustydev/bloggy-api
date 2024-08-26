@@ -3,10 +3,9 @@ const express = require('express');
 const app = express();
 const passport = require('passport');
 const createError = require('http-errors');
-const JwtStrategy = require('passport-jwt').Strategy,
-      ExtractJwt = require('passport-jwt').ExtractJwt;
-const { Prisma } = require('@prisma/client');
-const prismaClient = require('./prisma/client');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const prisma = require('./prisma/client');
 const postRouter = require('./routes/post')
 const commentRouter = require('./routes/comment')
 const userRouter = require('./routes/user');
@@ -22,7 +21,7 @@ const opts = {
 passport.use(
     new JwtStrategy(opts, async (payload, done) => {
       try {
-        const user = await prismaClient.user.findUnique({where: {id: payload.id}})
+        const user = await prisma.user.findUnique({where: {id: payload.id}})
         if (user) {
             return done(null, true)
         }
@@ -32,9 +31,9 @@ passport.use(
     })
 );
 
-app.use('/api/posts', postRouter)
-app.use('/api/comments', commentRouter)
-app.use('/api/user', userRouter)
+app.use('/api/v1/posts', postRouter)
+app.use('/api/v1/comments', commentRouter)
+app.use('/api/v1/user', userRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -48,9 +47,11 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({
       error: {
           message,
-          statusCode
+          statusCode,
+          stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
       }
   });
 });
 
-app.listen(process.env.PORT || 3000, () => {console.log(`App listening on port ${process.env.PORT}`)})
+const port = process.env.PORT || 3000;
+app.listen(port, () => {console.log(`App listening on port ${port}`)})

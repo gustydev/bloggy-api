@@ -1,6 +1,7 @@
 const prisma = require('../prisma/client');
 const asyncHandler = require('express-async-handler');
 const passport = require('passport');
+const { body, param, validationResult } = require('express-validator');
 
 exports.getAllComments = asyncHandler(async (req, res) => {
     const comments = await prisma.comment.findMany({
@@ -18,40 +19,76 @@ exports.getCommentById = asyncHandler(async (req, res) => {
     res.status(200).json(comment);
 });
 
-exports.updateComment = passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
-    const exists = await prisma.comment.findUnique({
-        where: { id: Number(req.params.commentId) },
-    });
-    if (!exists) {
-        const error = new Error(`Comment of id ${req.params.commentId} not found`);
-        error.statusCode = 404;
-        return next(error);
-    }
+exports.updateComment = [
+    body('content').trim().isLength({min: 1}).withMessage('Comment must not be empty'),
+    param('commentId').custom(async (value, {req}) => {
+        const exists = await prisma.comment.findUnique({
+            where: { id: Number(value) },
+        });
 
-    const comment = await prisma.comment.update({
-        where: { id: Number(req.params.commentId) },
-        data: {
-            content: req.body.content,
-            updatedAt: new Date(),
-        },
-    });
+        if (!exists) {
+            throw new Error(`Comment of id ${req.params.commentId} not found`);
+        }
+    }),
 
-    res.status(200).json(comment);
-});
+    passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
+        const errors = validationResult(req);
 
-exports.deleteComment = passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
-    const exists = await prisma.comment.findUnique({
-        where: { id: Number(req.params.commentId) },
-    });
-    if (!exists) {
-        const error = new Error(`Comment of id ${req.params.commentId} not found`);
-        error.statusCode = 404;
-        return next(error);
-    }
+        if (errors.isEmpty()) {
+            const comment = await prisma.comment.update({
+                where: { id: Number(req.params.commentId) },
+                data: {
+                    content: req.body.content,
+                    updatedAt: new Date(),
+                },
+            });
+        
+            res.status(200).json(comment);
+        } else {
+            const messages = [];
+            for (e in errors.array()) {
+                messages.push(errors.array()[e].msg)
+            }
 
-    const comment = await prisma.comment.delete({
-        where: { id: Number(req.params.commentId) },
-    });
+            return res.status(400).json({
+                errors: {
+                    messages,
+                    statusCode: 400
+                }
+            })
+        }
+    })
+]
 
-    res.status(200).json(comment);
-});
+
+exports.deleteComment = [
+    param('commentId').custom(async (value, {req}) => {
+        const exists = await prisma.comment.findUnique({
+            where: { id: Number(value) },
+        });
+
+        if (!exists) {
+            throw new Error(`Comment of id ${req.params.commentId} not found`);
+        }
+    }),
+
+    passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
+        const errors = validationResult(req);
+
+        if (errors.isEmpty()) {
+            const comment = await prisma.comment.delete({
+                where: { id: Number(req.params.commentId) },
+            });
+        
+            res.status(200).json(comment);
+        } else {
+            return res.status(400).json({
+                error: {
+                    message: errors.array()[0].msg,
+                    statusCode: 400
+                }
+            })
+        }
+    })
+];
+
