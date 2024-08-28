@@ -54,6 +54,7 @@ exports.getCommentsByPostId = asyncHandler(async (req, res) => {
 exports.createPost = [
     body('content').trim().isLength({min: 1}).withMessage('Post is missing text content'),
     body('title').trim().isLength({min: 1}).withMessage('Post is missing a title'),
+    body('subtitle').trim(),
 
     passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
@@ -67,9 +68,14 @@ exports.createPost = [
                     title: req.body.title,
                     authorId: decoded.id,
                     content: req.body.content,
+                    subtitle: req.body.subtitle
                 },
                 include: {
-                    author: true,
+                    author: {
+                        select: {
+                            name: true
+                        }
+                    },
                 },
             });
         

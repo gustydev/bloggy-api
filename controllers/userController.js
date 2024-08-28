@@ -61,7 +61,7 @@ exports.userLoginPost = [
 
     body('password').custom(async (value, {req}) => {
         const user = await prisma.user.findFirst({where: {name: req.body.name}})
-        console.log(value, user)
+
         const match = await bcrypt.compare(value, user.password);
         if (!match) {
             throw new Error('Invalid password')
