@@ -52,9 +52,9 @@ exports.getCommentsByPostId = asyncHandler(async (req, res) => {
 });
 
 exports.createPost = [
-    body('content').trim().isLength({min: 1}).withMessage('Post is missing text content'),
-    body('title').trim().isLength({min: 1}).withMessage('Post is missing a title'),
-    body('subtitle').trim(),
+    body('content').trim().isLength({min: 1}).withMessage('Post is missing textual content').isLength({max: 10000}).withMessage('Post content is too long (maximum: 10000 characters)'),
+    body('title').trim().isLength({min: 1}).withMessage('Post is missing a title').isLength({max: 150}).withMessage('Post title cannot be longer than 150 characters'),
+    body('subtitle').trim().isLength({max: 100}).withMessage("Post subtitle can't be longer than 100 characters"),
 
     passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
@@ -97,7 +97,8 @@ exports.createPost = [
 ];
 
 exports.createComment = [
-    body('content').trim().isLength({min: 1}).withMessage('Comment must not be empty'),
+    body('content').trim().isLength({min: 1}).withMessage('Comment must not be empty').isLength({max: 3000}).withMessage('Comment is too long (max: 3000 characters)'),
+    body('author').trim().isLength({max: 30}).withMessage('Author name must not surpass 30 characters'),
     param('postId').custom(async (value, {req}) => {
         const post = await prisma.post.findUnique({
             where: { id: Number(value) },
@@ -115,7 +116,7 @@ exports.createComment = [
             const comment = await prisma.comment.create({
                 data: {
                     content: req.body.content,
-                    author: req.body.author,
+                    author: req.body.author || undefined,
                     postId: Number(req.params.postId),
                 },
             });
@@ -139,8 +140,9 @@ exports.createComment = [
 
 
 exports.updatePost = [
-    body('content').trim().isLength({min: 1}).withMessage('Post is missing text content'),
-    body('title').trim().isLength({min: 1}).withMessage('Post is missing a title'),
+    body('content').trim().isLength({min: 1}).withMessage('Post is missing textual content').isLength({max: 10000}).withMessage('Post content is too long (maximum: 10000 characters)'),
+    body('title').trim().isLength({min: 1}).withMessage('Post is missing a title').isLength({max: 150}).withMessage('Post title cannot be longer than 150 characters'),
+    body('subtitle').trim().isLength({max: 100}).withMessage("Post subtitle can't be longer than 100 characters"),
     param('postId').custom(async (value, {req}) => {
         const exists = await prisma.post.findUnique({
             where: { id: Number(value) },

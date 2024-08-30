@@ -30,7 +30,7 @@ exports.getCommentById = asyncHandler(async (req, res) => {
 });
 
 exports.updateComment = [
-    body('content').trim().isLength({min: 1}).withMessage('Comment must not be empty'),
+    body('content').trim().isLength({min: 1}).withMessage('Comment must not be empty').isLength({max: 3000}).withMessage('Comment is too long (max: 3000 characters)'),
     param('commentId').custom(async (value, {req}) => {
         const exists = await prisma.comment.findUnique({
             where: { id: Number(value) },
