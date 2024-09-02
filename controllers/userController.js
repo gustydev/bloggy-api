@@ -71,12 +71,16 @@ exports.userLoginPost = [
     asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (errors.isEmpty()) {
-            const user = await prisma.user.findFirst({where: {name: req.body.name}})
+            const user = await prisma.user.findFirst({where: {name: req.body.name}, include: {password: false}})
             const token = jwt.sign({id: user.id}, process.env.SECRET, { expiresIn: '3d' })
             // Generates token for logged in users
             // To register in the first place you need a secret key, so this is (i think) not a problem
         
-            return res.status(200).json({message: 'Logged in successfully! Token expires in 3 days', token})
+            return res.status(200).json({
+                message: 'Logged in successfully! Token expires in 3 days', 
+                token,
+                user
+            })
         } else {
             return res.status(400).json({
                 error: {
