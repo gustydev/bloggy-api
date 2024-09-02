@@ -15,14 +15,30 @@ exports.userGet = asyncHandler(async (req, res) => {
 })
 
 exports.userRegisterPost = [
-    body('name').custom(async (value) => {
-        // Check if user already exists
-        const user = await prisma.user.findFirst({where: {name: value}});
-        if (user) {
-            throw new Error(`Username '${value}' already in use. Please try a different one.`)
-        }
-    }),
-    body('secret').equals(process.env.REGISTER_SECRET).withMessage('Secret register password is invalid'),
+    body('name')
+        .trim()
+        .isLength({ min: 3, max: 30 })
+        .withMessage('Username must be between 3 and 30 characters')
+        .matches(/^[a-zA-Z0-9_]+$/)
+        .withMessage('Username can only contain alphanumeric characters and underscores')
+        .custom(async (value) => {
+            const lowerCaseName = value.toLowerCase();
+            const user = await prisma.user.findFirst({
+                where: { name: { equals: lowerCaseName, mode: 'insensitive' } }
+            });
+
+            if (user) {
+                throw new Error(`Username '${value}' already in use. Please try a different one.`);
+            }
+        }),
+
+    body('password')
+        .isLength({ min: 8 })
+        .withMessage('Password must be at least 8 characters long'),
+
+    body('secret')
+        .equals(process.env.REGISTER_SECRET)
+        .withMessage('Secret word is invalid'),
 
     asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
@@ -41,12 +57,17 @@ exports.userRegisterPost = [
                 return res.status(200).json({message: 'User created successfully', name: req.body.name})
             })
         } else {
+            const messages = [];
+            for (e in errors.array()) {
+                messages.push(errors.array()[e].msg)
+            }
+
             return res.status(400).json({
-                error: {
-                    message: errors.array()[0].msg,
+                errors: {
+                    messages,
                     statusCode: 400
                 }
-            });
+            })
         }
     })
 ];
