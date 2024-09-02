@@ -1,4 +1,4 @@
-# Blog API
+# Bloggy API
 A RESTful API for managing blog posts and comments built with NodeJS, Express and PostgreSQL with Prisma ORM.
 
 ## Routes
