@@ -16,7 +16,7 @@ exports.getPosts = asyncHandler(async (req, res) => {
         where: {
             content: { contains: filter }
         },
-        include: { author: { select: { name: true } } }
+        include: { author: { select: { name: true } }, _count: { select : { comments: true }} }
     });
 
     res.status(200).json(posts);
@@ -27,7 +27,8 @@ exports.getPostById = asyncHandler(async (req, res) => {
         where: { id: Number(req.params.postId) },
         include: { 
             comments: true,
-            author: { select: { name: true } }
+            author: { select: { name: true } },
+            _count: { select: { comments: true } }
         },
     });
     res.status(200).json(post);
