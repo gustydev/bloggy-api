@@ -26,7 +26,7 @@ exports.getPostById = asyncHandler(async (req, res) => {
     const post = await prisma.post.findUnique({
         where: { id: Number(req.params.postId) },
         include: { 
-            comments: true,
+            comments: {orderBy: { createdAt: 'asc' } },
             author: { select: { name: true } },
             _count: { select: { comments: true } }
         },
