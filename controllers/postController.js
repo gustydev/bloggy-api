@@ -71,10 +71,14 @@ exports.createPost = [
         .trim()
         .isLength({max: 100})
         .withMessage("Post subtitle can't be longer than 100 characters"),
+    
+    body('published')
+        .isBoolean()
+        .withMessage('Published must be set to true or false'),
 
     passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
-
+        
         if (errors.isEmpty()) {
             const token = req.headers['authorization'].split(' ')[1];
             const decoded = jwt.verify(token, process.env.SECRET);
@@ -84,7 +88,8 @@ exports.createPost = [
                     title: req.body.title,
                     authorId: decoded.id,
                     content: req.body.content,
-                    subtitle: req.body.subtitle
+                    subtitle: req.body.subtitle,
+                    published: req.body.published
                 },
                 include: {
                     author: {
@@ -184,6 +189,10 @@ exports.updatePost = [
         .trim()
         .isLength({max: 100})
         .withMessage("Post subtitle can't be longer than 100 characters"),
+
+    body('published')
+        .isBoolean()
+        .withMessage('Published must be set to true or false'),
         
     param('postId').custom(async (value, {req}) => {
         const exists = await prisma.post.findUnique({
@@ -205,6 +214,7 @@ exports.updatePost = [
                     title: req.body.title,
                     subtitle: req.body.subtitle,
                     content: req.body.content,
+                    published: req.body.published,
                     updatedAt: new Date(),
                 },
             });
