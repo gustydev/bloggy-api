@@ -55,17 +55,14 @@ exports.updateComment = [
         
             res.status(200).json(comment);
         } else {
-            const messages = [];
-            for (e in errors.array()) {
-                messages.push(errors.array()[e].msg)
-            }
+            const messages = errors.array().map(e => e.msg);
 
             return res.status(400).json({
                 errors: {
                     messages,
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ]
@@ -92,12 +89,12 @@ exports.deleteComment = [
         
             res.status(200).json(comment);
         } else {
-            return res.status(400).json({
-                error: {
-                    message: errors.array()[0].msg,
-                    statusCode: 400
+            return res.status(404).json({
+                errors: {
+                    messages: [errors.array()[0].msg],
+                    statusCode: 404
                 }
-            })
+            });
         }
     })
 ];

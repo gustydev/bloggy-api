@@ -102,17 +102,14 @@ exports.createPost = [
         
             res.status(200).json(post);
         } else {
-            const messages = [];
-            for (e in errors.array()) {
-                messages.push(errors.array()[e].msg)
-            }
+            const messages = errors.array().map(e => e.msg);
 
             return res.status(400).json({
                 errors: {
                     messages,
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ];
@@ -154,17 +151,14 @@ exports.createComment = [
         
             res.status(200).json(comment);
         } else {
-            const messages = [];
-            for (e in errors.array()) {
-                messages.push(errors.array()[e].msg)
-            }
+            const messages = errors.array().map(e => e.msg);
 
             return res.status(400).json({
                 errors: {
                     messages,
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ];
@@ -221,17 +215,14 @@ exports.updatePost = [
         
             res.status(200).json(post);
         } else {
-            const messages = [];
-            for (e in errors.array()) {
-                messages.push(errors.array()[e].msg)
-            }
+            const messages = errors.array().map(e => e.msg);
 
             return res.status(400).json({
                 errors: {
                     messages,
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ];
@@ -262,11 +253,11 @@ exports.deletePost = [
             res.status(200).json(post);
         } else {
             return res.status(404).json({
-                error: {
-                    message: errors.array()[0].msg,
+                errors: {
+                    messages: [errors.array()[0].msg],
                     statusCode: 404
                 }
-            })
+            });
         }
     })
 ];

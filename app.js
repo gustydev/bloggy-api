@@ -39,14 +39,15 @@ app.use('/api/v1/user', userRouter)
 app.use(function(req, res, next) {
   next(createError(404));
 });
-  
+
+// Global error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
   res.status(statusCode).json({
-      error: {
-          message,
+      errors: {
+          messages: [message],
           statusCode,
           stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
       }

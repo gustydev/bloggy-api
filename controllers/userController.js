@@ -57,17 +57,14 @@ exports.userRegisterPost = [
                 return res.status(200).json({message: 'User created successfully', name: req.body.name})
             })
         } else {
-            const messages = [];
-            for (e in errors.array()) {
-                messages.push(errors.array()[e].msg)
-            }
+            const messages = errors.array().map(e => e.msg);
 
             return res.status(400).json({
                 errors: {
                     messages,
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ];
@@ -104,11 +101,11 @@ exports.userLoginPost = [
             })
         } else {
             return res.status(400).json({
-                error: {
-                    message: errors.array()[0].msg,
+                errors: {
+                    messages: [errors.array()[0].msg],
                     statusCode: 400
                 }
-            })
+            });
         }
     })
 ];
