@@ -5,8 +5,10 @@ const passport = require('passport');
 const { body, param, validationResult } = require("express-validator");
 
 exports.getPosts = asyncHandler(async (req, res) => {
-    const { page, limit, filter, sort = 'desc' } = req.query;
-
+    const { page, limit, filter, sort = 'desc', published } = req.query;
+    
+    const isPublished = published === 'true' ? true : published === 'false' ? false : undefined;
+    
     const posts = await prisma.post.findMany({
         skip: (page - 1) * limit || undefined,
         take: Number(limit) || undefined,
@@ -14,7 +16,8 @@ exports.getPosts = asyncHandler(async (req, res) => {
             updatedAt: sort
         },
         where: {
-            content: { contains: filter }
+            content: { contains: filter },
+            published: isPublished
         },
         include: { author: { select: { name: true } }, _count: { select : { comments: true }} }
     });
