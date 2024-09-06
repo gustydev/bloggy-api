@@ -82,7 +82,7 @@ exports.userLoginPost = [
     }),
 
     body('password').custom(async (value, {req}) => {
-        const lowerCaseName = value.toLowerCase();
+        const lowerCaseName = req.body.name.toLowerCase();
         const user = await prisma.user.findFirst({
             where: { name: { equals: lowerCaseName, mode: 'insensitive' } }
         });
