@@ -9,6 +9,12 @@ const prisma = require('./prisma/client');
 const postRouter = require('./routes/post')
 const commentRouter = require('./routes/comment')
 const userRouter = require('./routes/user');
+const cors = require('cors');
+
+app.use(cors({
+  origin: ['https://bloggy-blog.pages.dev', 'https://bloggy-admin.pages.dev'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
