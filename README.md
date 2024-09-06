@@ -32,3 +32,18 @@ A RESTful API for managing blog posts and comments built with NodeJS, Express an
 | `/api/v1/user/register` | POST   | Register a new user.                        |                  |
 | `/api/v1/user/login`    | POST   | Login and obtain a JWT.                    |                  |
 
+## Front-End Applications
+
+This API was used to make two separate front-end applications, both built with React, to serve different user roles and functionalities:
+
+### 1. **User Interface (Main Blog)**
+The user-facing application provides a seamless and engaging experience for visitors, allowing them to view, browse, and interact with blog posts and comments.
+
+- **[Repository](https://github.com/gustydev/bloggy-user)**: Explore the source code and contribute.
+- **[Live Preview](https://bloggy-blog.pages.dev)**: Try out the live application.
+
+### 2. **Admin Interface**
+The admin application is designed for blog administrators, offering features to manage content such as creating, editing, and deleting posts and comments, and moderating user activity.
+
+- **[Repository](https://github.com/gustydev/bloggy-admin)**: Access the source code and contribute.
+- **[Live Preview](https://bloggy-admin.pages.dev)**: Access the live admin panel.
