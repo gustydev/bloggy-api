@@ -71,14 +71,21 @@ exports.userRegisterPost = [
 
 exports.userLoginPost = [
     body('name').custom(async (value) => {
-        const user = await prisma.user.findFirst({where: {name: value}})
+        const lowerCaseName = value.toLowerCase();
+        const user = await prisma.user.findFirst({
+            where: { name: { equals: lowerCaseName, mode: 'insensitive' } }
+        });
+
         if (!user) {
             throw new Error('User not found')
         }
     }),
 
     body('password').custom(async (value, {req}) => {
-        const user = await prisma.user.findFirst({where: {name: req.body.name}})
+        const lowerCaseName = value.toLowerCase();
+        const user = await prisma.user.findFirst({
+            where: { name: { equals: lowerCaseName, mode: 'insensitive' } }
+        });
 
         const match = await bcrypt.compare(value, user.password);
         if (!match) {
@@ -89,7 +96,10 @@ exports.userLoginPost = [
     asyncHandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (errors.isEmpty()) {
-            const user = await prisma.user.findFirst({where: {name: req.body.name}, include: {password: false}})
+            const lowerCaseName = req.body.name.toLowerCase();
+            const user = await prisma.user.findFirst({
+                where: { name: { equals: lowerCaseName, mode: 'insensitive' } }, include: { password: false }
+            });
             const token = jwt.sign({id: user.id}, process.env.SECRET, { expiresIn: '3d' })
             // Generates token for logged in users
             // To register in the first place you need a secret key, so this is (i think) not a problem
