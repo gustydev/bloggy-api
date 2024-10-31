@@ -50,3 +50,15 @@ The admin application is designed for blog administrators, offering features to 
 | `/api/v1/user/register` | POST   | Register a new user.                  | None             |
 | `/api/v1/user/login`  | POST   | Login and obtain a JWT.               | None             |
    |                  |
+
+## Environment Variables
+The API requires some environment variables to be set on a .env file on the root directory:
+
+```plaintext
+PORT=3000
+DATABASE_URL=postgresql://yourusername:yourpass@localhost:5432/your_blog_db
+SECRET=secret_key
+REGISTER_SECRET=secret_word_for_registering
+```
+
+To run the app you need a PostgreSQL database up and running (locally for example).
