@@ -12,7 +12,7 @@ const userRouter = require('./routes/user');
 const cors = require('cors');
 
 app.use(cors({
-  origin: ['https://bloggy-blog.pages.dev', 'https://bloggy-admin.pages.dev'],
+  origin: process.env.NODE_ENV === 'production' ? [process.env.BLOG_URL, process.env.ADMIN_URL] : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
