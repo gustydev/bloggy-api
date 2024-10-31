@@ -59,6 +59,8 @@ PORT=3000
 DATABASE_URL=postgresql://yourusername:yourpass@localhost:5432/your_blog_db
 SECRET=secret_key
 REGISTER_SECRET=secret_word_for_registering
+BLOG_URL=https://main_blog_frontend_url.com # Optional in development (needed only for production)
+ADMIN_URL=https://admin_frontend_url.com    # Optional in development (needed only for production)
 ```
 
 To run the app you need a PostgreSQL database up and running (locally for example).
